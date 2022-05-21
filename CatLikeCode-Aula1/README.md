@@ -1,6 +1,6 @@
 # Clock
 
-![](dem0.gif)
+![](demo.gif)
 
 
 * [Reference](https://catlikecoding.com/unity/tutorials/basics/game-objects-and-scripts/)

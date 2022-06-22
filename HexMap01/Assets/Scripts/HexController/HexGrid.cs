@@ -1,7 +1,5 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 public class HexGrid : MonoBehaviour
 {
@@ -9,8 +7,6 @@ public class HexGrid : MonoBehaviour
     [SerializeField]private int width = 6;
 	[SerializeField]private int height = 6;
 	[SerializeField]private HexCell cellPrefab;
-	public Color defaultColor = Color.white;
-	public Color touchedColor = Color.magenta;
 	[SerializeField]public Material touchedMaterial;
 	[SerializeField]public Material defaultMaterial;
 
@@ -42,11 +38,11 @@ public class HexGrid : MonoBehaviour
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if(Physics.Raycast(inputRay,out hit)){
-           TouchCell(hit.point, touchedMaterial);
+           ColorCell(hit.point, touchedMaterial);
         }
     }
 	
-    public void TouchCell(Vector3 position, Material colorMaterial)
+    public void ColorCell(Vector3 position, Material colorMaterial)
     {
 		position = transform.InverseTransformPoint(position);
 		HexCoordinates coordinates = HexCoordinates.FromPosition(position);
@@ -57,7 +53,6 @@ public class HexGrid : MonoBehaviour
 			cell.material = colorMaterial;
 		}else{
 			cell.material = defaultMaterial;
-
 		}
 		hexMesh.Triangulate(cells);
 		Debug.Log("touch at "+coordinates.ToString());
@@ -75,6 +70,23 @@ public class HexGrid : MonoBehaviour
 		cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
 		// cell.color = defaultColor;
 		cell.material = defaultMaterial;
+
+		if(x>0){
+			cell.SetNeighbor(HexDirection.W, cells[i-1]);
+		}
+		if(z>0){
+			if((z & 1)==0){
+				cell.SetNeighbor(HexDirection.SE, cells[i-width]);
+				if(x>0){
+					cell.SetNeighbor(HexDirection.SW,cells[i-width-1]);
+				}
+			}else{
+				cell.SetNeighbor(HexDirection.SW, cells[i-width]);
+				if(x < width-1){
+					cell.SetNeighbor(HexDirection.SE,cells[i-width+1]);
+				}
+			}
+		}
 
 		Text label = Instantiate<Text>(cellLabelPrefab);
 		label.rectTransform.SetParent(gridCanvas.transform, false);

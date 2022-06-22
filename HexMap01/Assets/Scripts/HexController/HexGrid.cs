@@ -9,22 +9,27 @@ public class HexGrid : MonoBehaviour
 	[SerializeField]private HexCell cellPrefab;
 	[SerializeField]public Material touchedMaterial;
 	[SerializeField]public Material defaultMaterial;
+	[SerializeField]public Texture2D noiseSource;
+	[SerializeField] public HexMapEditor editor;
 
     private HexCell[] cells;
 	private Canvas gridCanvas;
 	HexMesh hexMesh;
 
 	void Awake () {
+		HexMetrics.noiseSource = noiseSource;
         gridCanvas = GetComponentInChildren<Canvas>();
         hexMesh = GetComponentInChildren<HexMesh>();
 
 		cells = new HexCell[height * width];
-
 		for (int z = 0, i = 0; z < height; z++) {
 			for (int x = 0; x < width; x++) {
 				CreateCell(x, z, i++);
 			}
 		}
+	}
+	void OnEnable () {
+		HexMetrics.noiseSource = noiseSource;
 	}
 	private void Start() {
 		hexMesh.Triangulate(cells);
@@ -38,25 +43,36 @@ public class HexGrid : MonoBehaviour
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if(Physics.Raycast(inputRay,out hit)){
-           ColorCell(hit.point, touchedMaterial);
+			Debug.Log("> "+hit.point);
+			if(editor != null){
+				editor.EditCell(GetCell(hit.point),this);
+			}else{
+
+           		GetCell(hit.point);
+			}
         }
     }
 	
-    public void ColorCell(Vector3 position, Material colorMaterial)
+    public HexCell GetCell(Vector3 position)
     {
 		position = transform.InverseTransformPoint(position);
 		HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 		int index = coordinates.X + coordinates.Z * width + coordinates.Z /2;
-		HexCell cell = cells[index];
-		cell.selected = !cell.selected;
-		if(cell.selected){
-			cell.material = colorMaterial;
-		}else{
-			cell.material = defaultMaterial;
-		}
-		hexMesh.Triangulate(cells);
-		Debug.Log("touch at "+coordinates.ToString());
+		return cells[index];
+
+		// HexCell cell = cells[index];
+		// cell.selected = !cell.selected;
+		// if(cell.selected){
+		// 	cell.material = colorMaterial;
+		// }else{
+		// 	cell.material = defaultMaterial;
+		// }
+		// hexMesh.Triangulate(cells);
+		// Debug.Log("touch at "+coordinates.ToString());
     }
+	public void Refresh(){
+		hexMesh.Triangulate(cells);
+	}
 
     void CreateCell (int x, int z, int i) {
 		Vector3 position;
@@ -93,6 +109,7 @@ public class HexGrid : MonoBehaviour
 		label.rectTransform.anchoredPosition =
 			new Vector2(position.x, position.z);
 		label.text = cell.coordinates.ToStringOnSeparateLines();
+		cell.uiRect = label.rectTransform;
 	}
 
 	

@@ -3,26 +3,26 @@ using UnityEngine;
 public class HexMapEditor : MonoBehaviour
 {
     public Material[] colors;
-    public HexGrid hexGrid;
     private Material activeColor;
+	int activeElevation;
 
     private void Awake() {
         SelectColor(0);
+        SetElevation(0);
     }
-    private void Update() {
-        if (Input.GetMouseButtonUp(0)) {
-			HandleInput();
-		}
-    }
-    void HandleInput(){
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if(Physics.Raycast(inputRay,out hit)){
-            // hexGrid.ColorCell(hit.point, activeColor);
-        }
-    }
+   
     public void SelectColor(int index)
     {
         activeColor = colors[index];
     }
+
+    public void EditCell(HexCell cell, HexGrid hexGrid)
+    {
+        cell.material = activeColor;
+        cell.Elevation = activeElevation;
+        hexGrid.Refresh();
+    }
+    public void SetElevation (float elevation) {
+		activeElevation = (int)elevation;
+	}
 }

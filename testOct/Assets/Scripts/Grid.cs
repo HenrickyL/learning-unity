@@ -35,7 +35,7 @@ public class Grid : MonoBehaviour
 	}
 
     void CreateCell (int x, int z, int i) {
-		var metric = new Metrics(i+4);
+		var metric = new Metrics(8,true);
 		Vector3 position;
 		position.x = (x + z*0.5f - z/2 + 5f)* (metric.InnerRadius * 2f);
 		position.y = 0f;

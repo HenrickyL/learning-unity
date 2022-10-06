@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -24,7 +23,7 @@ public class PoliMesh : MonoBehaviour
 		triangles.Clear();
 		colors.Clear();
 		for (int i = 0; i < cells.Length; i++) {
-			Triangulate(cells[i],i);
+			Triangulate(cells[i]);
 		}
 		poliMesh.vertices = vertices.ToArray();
 		poliMesh.triangles = triangles.ToArray();
@@ -32,8 +31,8 @@ public class PoliMesh : MonoBehaviour
 		poliMesh.RecalculateNormals();
 	}
 	
-	void Triangulate (Cell cell, int j) {
-		var metric = new Metrics(j+4);
+	void Triangulate (Cell cell, int c = 8) {
+		var metric = new Metrics(c);
 		Vector3 center = cell.transform.localPosition;
 		for (int i = 0; i < metric.numCorners; i++) {
 			AddTriangle(

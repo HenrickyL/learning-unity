@@ -8,7 +8,7 @@ public class Metrics : MonoBehaviour
         this.numCorners = corners;
         this.oriented = oriented;
     }
-     public const float outerRadius = 10f;
+    public const float outerRadius = 10f;
     
     
     public  float XOffset { get{
@@ -20,8 +20,8 @@ public class Metrics : MonoBehaviour
     public  float InnerRadius { get{
         return  outerRadius*Mathf.Cos(Angle);
     } }
-    public const float height = 3f;
     public int numCorners=12;
+
     public float Angle { get{
         return ((360)/numCorners)*Mathf.PI/180;
     } }
@@ -29,16 +29,21 @@ public class Metrics : MonoBehaviour
     private  List<Vector3> _corners = new List<Vector3>();
     public  List<Vector3>  Corners { get{
         if(!_corners.Any()){
+            GenerateCorners();
+        }
+        return _corners;
+    } }
+
+    private void GenerateCorners(){
             float startX = !this.oriented? 0f: XOffset;
             float startZ = !this.oriented? 0f: ZOffset;
             float _angle = !this.oriented? 0f: Angle/2 ;
+            var firts = new Vector3( outerRadius*Mathf.Sin(_angle), 0f,  outerRadius*Mathf.Cos(_angle));
             for(int i=0; i< numCorners; i++){
                 _corners.Add(new Vector3( outerRadius*Mathf.Sin(_angle), 0f,  outerRadius*Mathf.Cos(_angle)));
                 _angle+= Angle;
             }
-            _corners.Add(new Vector3(startX, 0f,startZ+(!oriented?outerRadius:0)));
-        }
-        return _corners;
-    } }
+            _corners.Add(firts);
+    }
 
 }

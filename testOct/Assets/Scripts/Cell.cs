@@ -6,34 +6,37 @@ public class Cell : MonoBehaviour
 {
     //try use this
     //https://youtu.be/zTYFgZmS9tQ
+    public int numVertices = 6;
+	public bool oriented = false;
     Canvas gridCanvas;
     Mesh mesh;
 	List<Vector3> vertices;
 	List<int> triangles;
 	List<Color> colors;
-    public static Cell instance; 
-    private Metrics  metrics;
-    public Cell(){
-        if(instance){
-            instance = new Cell();
-            instance.metrics = new Metrics(8);
-        }
-    }
     void Awake() {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
     }
    
     void Start () {
+		vertices = new List<Vector3>();
+		triangles = new List<int>();
+		colors = new List<Color>();
+		mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = mesh;
+        Triangulate();
+    	UpdateMesh();
+	}
+	void Update() {
+		UpdateMesh();
 	}
 
     public static Cell CreateCell (Metrics metrics) {
 		Cell cell = Instantiate<Cell>(new Cell());
-        cell.metrics = metrics;
-        cell.Clear();
+        cell.UpdateMesh();
         return cell;
 	}
 
-    public void Clear () {
+    public void UpdateMesh() {
 		mesh.Clear();
 		vertices.Clear();
 		triangles.Clear();
@@ -47,13 +50,22 @@ public class Cell : MonoBehaviour
 
 
     void Triangulate () {
-		var metric = new Metrics(metrics.numCorners);
+		var metric = new Metrics(numVertices,oriented);
 		Vector3 center = this.transform.localPosition;
 		for (int i = 0; i < metric.numCorners; i++) {
+			Debug.Log($"i :{i}");
+			Debug.Log(metric.Corners[i]);
+			Debug.Log(vertices.Count);
+
 			AddTriangle(
 				center,
 				center + metric.Corners[i],
 				center + metric.Corners[i+1]
+			);
+			AddTriangle(
+				center + metric.Corners[i+1],
+				center + metric.Corners[i],
+				center
 			);
 			AddTriangleColor(new Color(0,0,i*30));
 		}

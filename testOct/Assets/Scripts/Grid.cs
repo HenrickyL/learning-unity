@@ -14,8 +14,6 @@ public class Grid : MonoBehaviour
     void Awake () {
 		
 		cells = new Cell[height * width];
-		var metric  = new Metrics(8);
-		Cell.CreateCell(metric);
 	}
 	
 

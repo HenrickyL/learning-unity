@@ -6,7 +6,7 @@ public class Cell : MonoBehaviour
 {
     //try use this
     //https://youtu.be/zTYFgZmS9tQ
-    public int numVertices = 6;
+    [Range(3, 20)]public int numVertices = 6;
 	public bool oriented = false;
     Canvas gridCanvas;
     Mesh mesh;
@@ -28,7 +28,7 @@ public class Cell : MonoBehaviour
 	}
 	public bool isUpDirection = true;
 
-	 [Range(0, 20f)]public float height = 3f;
+	[Range(0, 20f)]public float height = 3f;
     private float targetHeight = 0f;
 	private int totalSteps = 16; // 16 morph steps
 	public float duration = 4f; // 4 seconds

@@ -4,7 +4,7 @@ Utilizando #mesh do #unity para fazer alguns estudos de geração #procedural de
 ![Estudando a posição dos pontos](imgs/polygon.png)
 
 
-![demo1]](imgs/demo1.gif)
+![demo1](imgs/demo1.gif)
 
 
 #unity #csharp #gamedev #gamedesign #learning

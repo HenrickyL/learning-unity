@@ -3,18 +3,25 @@ using UnityEngine.UI;
 
 public class Grid : MonoBehaviour
 {
-    public int width = 6;
-	public int height = 6;
+    public int rings = 3;
 	public Cell cellPrefab;
+    public bool oriented = true;
     Cell[] cells;
     public Text cellLabelPrefab;
     
 
 
     void Awake () {
-		
-		cells = new Cell[height * width];
+		// StartCoroutine(Cell.GenerateNeighbors(this, cellPrefab,1));
+		Cell.GenerateNeighbors(this, cellPrefab,1);
+
 	}
+
+
+    private void Update() {
+        if(Input.GetMouseButton(0)){
+        }
+    }
 	
 
 

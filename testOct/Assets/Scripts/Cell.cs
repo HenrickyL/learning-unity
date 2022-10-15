@@ -19,7 +19,7 @@ public class Cell : MonoBehaviour
 	List<int> triangles;
 	List<Color> colors;
 	[SerializeField]
-	public Neighbors neighbors;
+	public Cell[] neighbors;
 	public Text cellLabelPrefab;
 	private Vector3 Center{
 		get{
@@ -78,14 +78,13 @@ public class Cell : MonoBehaviour
 	}
     void Awake() {
 		metric = new Metrics(numVertices,oriented);
-		neighbors = new Neighbors(numVertices,metric.NeighborsDirections.ToArray());
+		neighbors = new Cell[numVertices];
 		CreateCanvasLabel();
 		vertices = new List<Vector3>();
 		triangles = new List<int>();
 		colors = new List<Color>();
 		mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-        Triangulate();
     	UpdateMesh();
 		LerpHight();
 		DrawLabel();
@@ -121,9 +120,11 @@ public class Cell : MonoBehaviour
 
     void Triangulate () {
 		metric = new Metrics(numVertices,oriented);
-		for (int i = 0; i < metric.numCorners; i++) {
-			AddTriangleUpFace(i,color);
-			AddTriangleDownFace(i,color);
+		for (int i = 0; i < numVertices; i++) {
+			int dir = (i-2)%numVertices;
+			dir = dir<0? numVertices + dir : dir;
+			AddTriangleUpFace(i, neighbors[dir]!=null? color: Color.red);
+			AddTriangleDownFace(i,neighbors[dir]!= null? color: Color.red);
 			AddQuadFace(i, Color.red, Color.green);
 		}
 	}
@@ -185,9 +186,9 @@ public class Cell : MonoBehaviour
 			);
 		}else{
 			AddTriangle(
-				AnotherCenter + metric.Corners[i+1],
-				AnotherCenter + metric.Corners[i],
-				AnotherCenter
+				Center + metric.Corners[i+1],
+				Center + metric.Corners[i],
+				Center
 			);
 		}
 		AddTriangleColor(c);
@@ -202,9 +203,9 @@ public class Cell : MonoBehaviour
 			);
 		}else{
 			AddTriangle(
-				Center,
-				Center + metric.Corners[i],
-				Center + metric.Corners[i+1]
+				AnotherCenter,
+				AnotherCenter + metric.Corners[i],
+				AnotherCenter + metric.Corners[i+1]
 			);
 		}
 		AddTriangleColor(c);
@@ -225,89 +226,89 @@ public class Cell : MonoBehaviour
 		}
 		AddQuadColor(c1,c2);
 	}
-	public Cell GetNeighbor (Direction direction) {
-		return neighbors[(int)direction];
+	public Cell GetNeighbor (int direction) {
+		return neighbors[direction];
 		
 	}
-	public void SetNeighbor (Direction direction, Cell cell) {
+	public void SetNeighbor (int direction, Cell cell) {
 		neighbors[(int)direction] = cell ;
-		Debug.Log($"{this.name} {direction} -> {direction.Opposite(oriented)}");
-		cell.neighbors[(int)direction.Opposite(oriented)] = this;
+		cell.neighbors[direction.HexOpposite()] = this;
 	}
-	public void RefreshNeighbor(Direction direction, Cell cell){
-		var left = neighbors[(int)direction.Left()];
-		var right = neighbors[(int)direction.Right()];
-		if(left != null){
-			cell.SetNeighbor(direction.Right().Opposite(oriented),left);
+	public void RefreshNeighbor(int direction, Cell cell){
+		var left = neighbors[direction.HexLeft()];
+		var right = neighbors[direction.HexRight()];
+		if(	cell.neighbors[direction.HexDoubleLeft()] == null && left != null){
+			cell.SetNeighbor(direction.HexDoubleLeft(),left);
 		}
-		if(right != null){
-			cell.SetNeighbor(direction.Left().Opposite(oriented),right);
+		if(	cell.neighbors[direction.HexDoubleRight()] == null && right != null){
+			cell.SetNeighbor(direction.HexDoubleRight(),right);
 		}
+		
 	}
 
-	public void GenerateNeighbors(Cell prefab, Grid grid, int count = 1){
+	public IEnumerator<WaitForSeconds> GenerateNeighbors(Cell prefab, Grid grid, int rings){
 		MAX--;
 		if(MAX<0)
-			return;
-			// yield return new WaitForSeconds(0);
-		var current = this;
-		var pos = current.transform.localPosition+Vector3.up*(50-MAX + 2);
-		for(int i=0; i<current.numVertices; i++){
-			current.color = Color.green;
-			// yield return new WaitForSeconds(2f);
-			var dir = (Direction)current.metric.NeighborsDirections[i];
-			if(current.neighbors[(int)dir]== null){
-				var cell = Instantiate<Cell>(prefab);
-				current.SetNeighbor(dir,cell);
-				cell.transform.SetParent(grid.transform);
-				cell.transform.localPosition = current.metric.GenerateNeig(pos)[i];
-			}
-		}
-		if(count>0){
-			for(var d=Direction.N; d<=Direction.NW; d++){
-				Cell n = current.neighbors[(int)d];
-				if(n!= null){
-					n.color = Color.black;
-					current.RefreshNeighbor(d,n);
+			// return;
+			yield return new WaitForSeconds(0);
+		Cell current = this;
+		Queue< (Cell,int)> toRefresh = new Queue<(Cell,int)>();
+		Queue<Cell> toGenerate = new Queue<Cell>();
+		toGenerate.Enqueue(current);
+		grid.cells.Add(current);
+		int qtdCells = numVertices*(2+rings-1)*rings/2;
+		while(toGenerate.Any() && qtdCells>0){
+			current = toGenerate.Dequeue();
+			var pos = current.transform.localPosition+Vector3.up*(rings);
+			for(int dir=0; dir<numVertices; dir++){
+				if(current.neighbors[dir] == null){
+					yield return new WaitForSeconds(0.3f);
+					var cell = Instantiate<Cell>(prefab);
+					current.SetNeighbor(dir,cell);
+					cell.transform.SetParent(grid.transform);
+					cell.transform.localPosition = current.metric.GenerateNeig(pos)[dir];
+					cell.transform.SetParent(grid.transform);
+					toRefresh.Enqueue((cell,dir));
+					grid.cells.Add(cell);
+					qtdCells--;
 				}
 			}
-			// for(var d=Direction.N; d<Direction.NW; d++){
-			// 	Cell n = current.neighbors[(int)d];
-			// 	if(n!= null){
-			// 		n.GenerateNeighbors(prefab,grid,count-1);
-			// 	}
-			// }
+			while(toRefresh.Any()){
+				var tuple = toRefresh.Dequeue();
+				Cell neig = tuple.Item1;
+				int dir = tuple.Item2;
+				current.RefreshNeighbor(dir,neig);
+				toGenerate.Enqueue(neig);
+			}
 		}
 	}
 
-	public static void GenerateNeighbors(Grid grid,Cell prefab, int rings = 1){
+	public static IEnumerator<WaitForSeconds> GenerateNeighbors(Grid grid,Cell prefab, int rings = 1){
 		Cell current = Instantiate<Cell>(prefab);
 		current.transform.localPosition = grid.transform.position;
-		current.color = Color.red;
 		current.transform.SetParent(grid.transform);
-
-		current.GenerateNeighbors(prefab,grid);
+		return current.GenerateNeighbors(prefab,grid,rings);
 	}
 
 }
 
 
 
-public class Neighbors{
-	private Cell[] _cells;
-	private int[] _reference;
+// public class Neighbors{
+// 	private Cell[] _cells;
+// 	private int[] _reference;
 	
-	public Neighbors(int len, int[] reference){
-		this._cells = new Cell[len];
-		this._reference = reference;
-	}
+// 	public Neighbors(int len, int[] reference){
+// 		this._cells = new Cell[len];
+// 		this._reference = reference;
+// 	}
 
-	public Cell this[int i] {
-		get=> _cells[_reference[i]];
-		set => _cells[_reference[i]] = value;
-	}
-	public Cell this[Direction d] {
-		get=> _cells[_reference[(int)d]];
-		set => _cells[_reference[(int)d]] = value;
-	}
-}
+// 	public Cell this[int i] {
+// 		get=> _cells[_reference[i]];
+// 		set => _cells[_reference[i]] = value;
+// 	}
+// 	public Cell this[Direction d] {
+// 		get=> _cells[_reference[(int)d]];
+// 		set => _cells[_reference[(int)d]] = value;
+// 	}
+// }

@@ -72,18 +72,15 @@ public class Metrics : MonoBehaviour
         }
         _corners.Add(firts);
         //directions
-        _angle = AngleRect - (this.oriented? 0f: Angle/2);
-        for(int i=(int)Direction.N; i<=(int)Direction.NW; i++){
-            if(!NeighborsDirections.Contains(i)){
-                continue;
-            }
+        _angle = /*AngleRect - */(this.oriented? 0f: Angle/2);
+        for(int i=0; i<=numCorners; i++){
             _neighborsPositions.Add(new Vector3(
-                (InnerRadius*3/2 + offSet)*Mathf.Cos(_angle),
+                (InnerRadius*3/2 + offSet)*Mathf.Sin(_angle),
                 0f,
-                (InnerRadius*3/2 + offSet)*Mathf.Sin(_angle)
+                (InnerRadius*3/2 + offSet)*Mathf.Cos(_angle)
                 ) 
             );
-            _angle -= Angle;
+            _angle += Angle;
         }
     }
 

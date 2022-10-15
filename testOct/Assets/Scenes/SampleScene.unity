@@ -400,7 +400,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rings: 3
   cellPrefab: {fileID: 514751411342315492, guid: 41316c678030f8a4bbbf5eeb71340e9d, type: 3}
-  oriented: 1
+  oriented: 0
+  cells: []
   cellLabelPrefab: {fileID: 2859382287095429150, guid: a9f96377b1254864a9604ded6b699e18, type: 3}
 --- !u!4 &1550404542
 Transform:

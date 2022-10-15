@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Grid : MonoBehaviour
 {
-    public int rings = 3;
+    [Range(0,5)] public int rings = 3;
 	public Cell cellPrefab;
     public bool oriented = true;
     public List<Cell> cells;

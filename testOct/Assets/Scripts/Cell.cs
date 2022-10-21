@@ -121,7 +121,7 @@ public class Cell : MonoBehaviour
     void Triangulate () {
 		metric = new Metrics(numVertices,oriented);
 		for (int i = 0; i < numVertices; i++) {
-			int dir = (i-2)%numVertices;
+			int dir = (i-2 - (oriented?0:1))%numVertices;
 			dir = dir<0? numVertices + dir : dir;
 			AddTriangleUpFace(i, neighbors[dir]!=null? color: Color.red);
 			AddTriangleDownFace(i,neighbors[dir]!= null? color: Color.red);

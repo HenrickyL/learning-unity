@@ -197,6 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdf67ca4e9ceed34c804cdbb0527127b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numVertices: 6
   oriented: 1
   neighbors:
   - {fileID: 0}

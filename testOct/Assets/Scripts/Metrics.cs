@@ -10,11 +10,13 @@ public class Metrics : MonoBehaviour
     }
     public const float outerRadius = 10f;
     
-    
-    public  float XOffset { get{
+    public float EdgeSize{get{
+        return XOffset*2;
+    }}
+    private  float XOffset { get{
         return outerRadius*Mathf.Sin(Angle/2);
     } }
-    public  float ZOffset { get{
+    private  float ZOffset { get{
         return outerRadius*Mathf.Cos(Angle/2);
     } }
     public  float InnerRadius { get{

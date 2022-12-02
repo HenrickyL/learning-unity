@@ -1,18 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine;using UnityEngine.UI;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer),typeof(RectTransform))]
 public class Cell : MonoBehaviour
 {
 	public static int count=-1;	
-	public static int MAX = 50;
-    [Range(3, 20)]private int numVertices = 6;
+	public static int MAX = 200;
+	[Range(3, 20)]public int numVertices = 6;
 	public bool oriented = false;
-    Canvas canvas;
+	Canvas canvas;
 	Text label;
-    Mesh mesh;
+	Mesh mesh;
 	Color color = Color.blue;
 	List<Vector3> vertices;
 	private Metrics metric;
@@ -20,6 +19,11 @@ public class Cell : MonoBehaviour
 	List<Color> colors;
 	[SerializeField]
 	public Cell[] neighbors;
+	public float EdgeSize {
+		get{
+			return metric.EdgeSize;
+		}
+	}
 	public Text cellLabelPrefab;
 	private Vector3 Center{
 		get{
@@ -58,7 +62,7 @@ public class Cell : MonoBehaviour
 	private void CreateCanvasLabel(){
 		if(showLabel){
 			canvas = GetComponentInChildren<Canvas>();
-			canvas.transform.localPosition = transform.position;
+			canvas.transform.position = transform.position;
 			label = Instantiate<Text>(cellLabelPrefab);
 			// label.rectTransform.anchoredPosition =
 			// 		new Vector2(Center.x, Center.z);
@@ -71,8 +75,9 @@ public class Cell : MonoBehaviour
 		if(showLabel){
 			if(canvas == null)
 				CreateCanvasLabel();
-			var pos = transform.localPosition+Vector3.up*targetHeight;
-			canvas.transform.localPosition = pos+Vector3.up*1.5f;
+			var current = transform.position;
+			var pos = new Vector3(current.x, current.y+targetHeight, current.z);
+			canvas.transform.position = pos+Vector3.up*1.5f;
 			label.text = this.name;
 		}
 	}
@@ -110,7 +115,7 @@ public class Cell : MonoBehaviour
 		vertices.Clear();
 		triangles.Clear();
 		colors.Clear();
-        this.Triangulate();
+		this.Triangulate();
 		mesh.vertices = vertices.ToArray();
 		mesh.triangles = triangles.ToArray();
 		mesh.colors = colors.ToArray();
@@ -119,7 +124,6 @@ public class Cell : MonoBehaviour
 
 
     void Triangulate () {
-		metric = new Metrics(numVertices,oriented);
 		for (int i = 0; i < numVertices; i++) {
 			int dir = (i-2 - (oriented?0:1))%numVertices;
 			dir = dir<0? numVertices + dir : dir;
@@ -246,11 +250,12 @@ public class Cell : MonoBehaviour
 		
 	}
 
-	public IEnumerator<WaitForSeconds> GenerateNeighbors(Cell prefab, Grid grid, int rings){
+	private IEnumerator<WaitForSeconds> GenerateNeighbors(Cell prefab, Grid grid, int rings, float angle){
 		MAX--;
 		if(MAX<0)
 			// return;
 			yield return new WaitForSeconds(0);
+		Cell origin = this;
 		Cell current = this;
 		Queue< (Cell,int)> toRefresh = new Queue<(Cell,int)>();
 		Queue<Cell> toGenerate = new Queue<Cell>();
@@ -259,15 +264,14 @@ public class Cell : MonoBehaviour
 		int qtdCells = numVertices*(2+rings-1)*rings/2;
 		while(toGenerate.Any() && qtdCells>0){
 			current = toGenerate.Dequeue();
-			var pos = current.transform.localPosition+Vector3.up*(rings);
+			var pos = current.transform.position;
 			for(int dir=0; dir<numVertices; dir++){
 				if(current.neighbors[dir] == null){
 					yield return new WaitForSeconds(0.3f);
 					var cell = Instantiate<Cell>(prefab);
 					current.SetNeighbor(dir,cell);
 					cell.transform.SetParent(grid.transform);
-					cell.transform.localPosition = current.metric.GenerateNeig(pos)[dir];
-					cell.transform.SetParent(grid.transform);
+					cell.transform.position = current.metric.GenerateNeig(pos)[dir];
 					toRefresh.Enqueue((cell,dir));
 					grid.cells.Add(cell);
 					qtdCells--;
@@ -283,11 +287,12 @@ public class Cell : MonoBehaviour
 		}
 	}
 
-	public static IEnumerator<WaitForSeconds> GenerateNeighbors(Grid grid,Cell prefab, int rings = 1){
+	public static IEnumerator<WaitForSeconds> GenerateNeighbors(Grid grid,Cell prefab, int rings, float angle){
 		Cell current = Instantiate<Cell>(prefab);
-		current.transform.localPosition = grid.transform.position;
+		current.transform.position = grid.transform.position;
 		current.transform.SetParent(grid.transform);
-		return current.GenerateNeighbors(prefab,grid,rings);
+		grid.center = current;
+		return current.GenerateNeighbors(prefab,grid,rings,angle);
 	}
 
 }

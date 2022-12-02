@@ -398,11 +398,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49c5654dc8d1fc545b1406bece595eef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rings: 3
   cellPrefab: {fileID: 514751411342315492, guid: 41316c678030f8a4bbbf5eeb71340e9d, type: 3}
   oriented: 0
   cells: []
+  center: {fileID: 0}
   cellLabelPrefab: {fileID: 2859382287095429150, guid: a9f96377b1254864a9604ded6b699e18, type: 3}
+  radius: 17
 --- !u!4 &1550404542
 Transform:
   m_ObjectHideFlags: 0
@@ -411,7 +412,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1550404540}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -30, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

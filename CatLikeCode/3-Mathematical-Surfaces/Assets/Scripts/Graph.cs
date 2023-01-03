@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Graph : MonoBehaviour
@@ -7,6 +6,8 @@ public class Graph : MonoBehaviour
    Transform pointPrefab;
    [SerializeField,Range(10, 100)]
    int resolution = 10;
+    [SerializeField]
+	FunctionLibrary.FunctionName function;
    Transform[] points;
 
    void Awake(){
@@ -24,11 +25,12 @@ public class Graph : MonoBehaviour
    }
 
    void Update(){
+    FunctionLibrary.Function f = FunctionLibrary.GetFunction(function);
     float time =  Time.time;
         for(var i=0; i<points.Length; i++){
             Transform point = points[i];
             Vector3 position = point.localPosition;
-            position.y = Mathf.Sin(Mathf.PI * (position.x +time));
+            position.y = f(position.x, time);
             point.localPosition = position;
         }
    }
